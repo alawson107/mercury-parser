@@ -1531,8 +1531,9 @@ function setAttrs(node, attrs) {
 var IS_LINK = new RegExp('https?://', 'i');
 var IMAGE_RE = '.(png|gif|jpe?g)';
 var IS_IMAGE = new RegExp("".concat(IMAGE_RE), 'i');
-var IS_SRCSET = new RegExp("".concat(IMAGE_RE, "(\\?\\S+)?(\\s*[\\d.]+[wx])"), 'i');
-var TAGS_TO_REMOVE = ['script', 'style', 'form'].join(',');
+var IS_SRCSET = new RegExp("".concat(IMAGE_RE, "(\\?\\S+)?(\\s*[\\d.]+[wx])"), 'i'); // export const TAGS_TO_REMOVE = ['script', 'style', 'form'].join(',');
+
+var TAGS_TO_REMOVE = ['script', 'style'].join(','); //  AJL REMOVED 2021-06-13 MERCOLA
 
 // lazy loaded images into normal images.
 // Many sites will have img tags with no source, or an image tag with a src
@@ -1676,7 +1677,10 @@ var Resource = {
         contentType = _ref2.contentType;
     var encoding = getEncoding(contentType);
     var decodedContent = iconv.decode(content, encoding);
-    var $ = cheerio.load(decodedContent); // after first cheerio.load, check to see if encoding matches
+    var $ = cheerio.load(decodedContent, {
+      decodeEntities: false,
+      recognizeSelfClosing: true
+    }); // after first cheerio.load, check to see if encoding matches
 
     var contentTypeSelector = cheerio.browser ? 'meta[http-equiv=content-type]' : 'meta[http-equiv=content-type i]';
     var metaContentType = $(contentTypeSelector).attr('content') || $('meta[charset]').attr('charset');
@@ -1888,13 +1892,13 @@ var TwitterExtractor = {
 var NYTimesExtractor = {
   domain: 'www.nytimes.com',
   title: {
-    selectors: ['h1.g-headline', 'h1[itemprop="headline"]', 'h1.headline']
+    selectors: ['h1.g-headline', 'h1[itemprop="headline"]', 'h1.headline', 'h1 .balancedHeadline']
   },
   author: {
-    selectors: [['meta[name="author"]', 'value'], '.g-byline', '.byline']
+    selectors: [['meta[name="author"]', 'value'], '.g-byline', '.byline', ['meta[name="byl"]', 'value']]
   },
   content: {
-    selectors: ['div.g-blocks', 'article#story'],
+    selectors: ['div.g-blocks', 'section[name="articleBody"]', 'article#story'],
     transforms: {
       'img.g-lazy': function imgGLazy($node) {
         var src = $node.attr('src');

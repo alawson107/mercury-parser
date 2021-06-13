@@ -64,7 +64,10 @@ const Resource = {
   encodeDoc({ content, contentType }) {
     const encoding = getEncoding(contentType);
     let decodedContent = iconv.decode(content, encoding);
-    let $ = cheerio.load(decodedContent);
+    let $ = cheerio.load(decodedContent, {
+      decodeEntities: false,
+      recognizeSelfClosing: true,
+    });
 
     // after first cheerio.load, check to see if encoding matches
     const contentTypeSelector = cheerio.browser
